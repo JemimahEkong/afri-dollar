@@ -35,11 +35,13 @@ export interface PaginatedAuditLogs {
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  let timer: NodeJS.Timeout;
+  let timer: NodeJS.Timeout | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error(`Query timed out after ${ms}ms`)), ms);
   });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer!));
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
 }
 
 export const AuditService = {
